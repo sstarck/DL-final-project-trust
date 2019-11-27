@@ -22,7 +22,8 @@ def get_data(directory, annotation, attribute, norm=True):
     for image_path in data:
         image = cv2.imread(os.path.join(directory, image_path)) # Load image from file path
         # NORMALIZE IMAGE HERE BY / 255 IF WANT
-        image = image[:, :, 0] # Squish RBG to one pixel value since greyscale
+        # JOHN COMMENTED THIS OUT because dims didn't work with conv2d layer. And because TA said we don't need this
+        #image = image[:, :, 0] # Squish RBG to one pixel value since greyscale    
         x.append(image)
         y.append(labels[attribute][image_path]) # Get the label associated with that image
     # Do some kind of normalization on labels???
@@ -30,6 +31,11 @@ def get_data(directory, annotation, attribute, norm=True):
     #y = y - np.min(y)
     #y = np.float32(y / np.max(y))
     x, y = np.array(x), np.array(y)
+    
+    # JOHN ADDED THIS. x was previously uint8 which didnt work with conv layers 
+    x = x.astype('float32')
+    y = y.astype('float32')
+   
     # print("Shape of x = ", x.shape, " and of y = ", y.shape) # x = (4874, 150, 130) and y = (4874,) <--- FIGURE OUT HOW TO SQUISH TO 1 IN LAST X DIM???
     return x, y
 
