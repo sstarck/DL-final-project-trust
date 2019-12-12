@@ -26,30 +26,30 @@ class Model(tf.keras.Model):
         self.conv1 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv2 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool1 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.conv3 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv4 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool2 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.conv5 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv6 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool3 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.conv7 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv8 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv9 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool4 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.conv10 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv11 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv12 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool5 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.conv13 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv14 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.conv15 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=(1,1), padding='same', activation='relu')
         self.pool6 = tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2))
-        
+
         self.flatten = tf.keras.layers.Flatten()
         self.dropout = tf.keras.layers.Dropout(rate=0.5478380034535812)
         self.relu = tf.keras.layers.Dense(2079, activation='relu')
@@ -119,9 +119,11 @@ def train(model, train_inputs, train_labels):
     num_iterations = int( np.size(train_inputs, 0) / batch_size )
     big_loss = []
     for i in range(num_iterations):
-        
+        # Note - can't shuffle as tensor in main() because dataset is too large, so handle big dataset as numpy and then convert to tensor during batching
         batch_inputs = train_inputs[n:n+batch_size, :, :, :]
+        batch_inputs = tf.convert_to_tensor(batch_inputs)
         batch_scores = train_labels[n:n+batch_size,]
+        batch_scores = tf.convert_to_tensor(batch_scores)
         n += batch_size
 
         with tf.GradientTape() as tape:
@@ -152,14 +154,16 @@ def test(model, test_inputs, test_labels):
     all_predicted_scores=[]
 
     for i in range(num_iterations):
-        batch_inputs = test_inputs[n:n+batch_size, :, :, :]
-        batch_scores = test_labels[n:n+batch_size,]
+        batch_inputs = train_inputs[n:n+batch_size, :, :, :]
+        batch_inputs = tf.convert_to_tensor(batch_inputs)
+        batch_scores = train_labels[n:n+batch_size,]
+        batch_scores = tf.convert_to_tensor(batch_scores)
         n += batch_size
 
         predicted_scores = model.call(batch_inputs, False)
         m, b, r, p, e = linregress(y=tf.reshape(batch_scores, [-1, 1]), x=tf.reshape(predicted_scores, [-1, 1]))
         r2 = r**2
-        
+
         if i == 0:
             all_predicted_scores = predicted_scores
         else:

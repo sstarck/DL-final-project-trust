@@ -33,11 +33,11 @@ def main():
     loss_data = []
     for i in range(num_epochs): # Shuffle data before training each epoch
         t0 = time.time()
-        indices = list(range(0, len(train_labels)))
-        tf.random.shuffle(indices)
-        shuffled_train_data = tf.gather(train_data, indices)
-        shuffled_train_labels = tf.gather(train_labels, indices)
-        epoch_train_loss = convolution.train(model, shuffled_train_data, shuffled_train_labels)
+        np.random.seed(0)
+        np.random.shuffle(train_data)
+        np.random.seed(0)
+        np.random.shuffle(train_labels)
+        epoch_train_loss = convolution.train(model, train_data, train_labels)
         loss_data.append( epoch_train_loss )
         r2, all_predicted_scores = convolution.test(model, test_data, test_labels)
         r2_data.append(r2)
@@ -70,3 +70,18 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
+OLD CODE
+        indices = list(range(0, len(train_labels)))
+        tf.random.shuffle(indices)
+        shuffled_train_data = tf.gather(train_data, indices)
+        shuffled_train_labels = tf.gather(train_labels, indices)
+
+        indices = list(range(0, len(train_labels)))
+        np.random.shuffle(indices)
+        shuffled_train_data = np.take(train_data, indices)
+        shuffled_train_labels = np.take(train_labels, indices)
+        print("train data shape is ", shuffled_train_data.shape)
+        print("train label shape is ", shuffled_train_labels.shape)
+"""
